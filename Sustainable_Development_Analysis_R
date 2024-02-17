@@ -1,0 +1,2181 @@
+############### NECESSARY LIBRARIES ###############
+library(pastecs) # DESCRIPTIVE STATISTICS
+library(Hmisc) # IMPUTATION 
+library(fitdistrplus) # FITTING OF DISTRIBUTIONS 
+library(jmv) # DESCRIPTIVE STATISTICS
+library(fBasics) # BASIC STATISTICS
+library(ggplot2) # DATA VISUALIZATION 
+library(reshape) # DATA MANIPULATION 
+library(corrplot) # CORRELATION CHART
+############### DATA ###############
+data = read.csv("C:\\Users\\balaj\\Documents\\DATASETS\\sustainable_development_report_2023.csv",header=T)
+View(data)
+head(data) 
+str(data) # VARIABLE TYPES
+stat.desc(data) # DESCRIPTIVE STATISTICS
+
+############### DATA ATTRIBUTES ############### 
+############### ATTRIBUTE-1 --> country_code ###############
+############### ATTRIBUTE-2 --> country ###############
+############### ATTRIBUTE-3 --> region ###############
+pct = round(100*(table(data$region))/sum(table(data$region)))
+lab = c("E.Europe & C.Asia\n","East & South Asia\n","LAC\n","\nMENA\n","\nOCEANIA\n","OECD\n","Sub-Saharan Africa\n")
+pie(table(data$region),main="Pie Chart of Countries in different regions",labels=paste(lab,sep=" ",pct,"%"),col=rainbow(length(table(data$region))),clockwise = F,init.angle = 100)
+############### HEATMAP ###############
+new_corr_data = data[,-c(1,2,3)]
+
+data_corr_1 = cor(new_corr_data)
+data_corr_1
+head(data_corr_1)
+
+data_corr_2 = rcorr(as.matrix(new_corr_data))
+data_corr_2
+
+data_corr_2.coeff = data_corr_2$r
+data_corr_2.pval = data_corr_2$P
+
+corrplot(data_corr_2.coeff)
+
+corr_df = melt(data_corr_2.coeff)
+
+CORRELATION = corr_df$value
+ggplot(corr_df, aes(X1, X2)) +                          
+  geom_tile(aes(fill=CORRELATION)) + 
+  scale_fill_gradient(low="blue4",high="orange") + 
+  theme(axis.text.x =element_text(angle=90,hjust=1)) +
+  ggtitle("HEATMAP") + 
+  theme(plot.title = element_text(hjust=0.5)) 
+############### ATTRIBUTE-4 --> overall_score ###############
+head(data$overall_score)
+
+summary(data$overall_score)
+
+basicStats(data$overall_score)
+
+descriptives(
+  data = data,
+  vars = "overall_score",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+boxplot(data$overall_score,main = "BOXPLOT OF overall_score",col="yellow")
+
+fn_4 = fitdist(data$overall_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_4)
+cdfcomp(fn_4)
+qqcomp(fn_4)
+ppcomp(fn_4)
+summary(fn_4)
+fln_4 = fitdist(data$overall_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_4)
+cdfcomp(fln_4)
+qqcomp(fln_4)
+ppcomp(fln_4)
+summary(fln_4)
+fw_4 = fitdist(data$overall_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_4)
+cdfcomp(fw_4)
+qqcomp(fw_4)
+ppcomp(fw_4)
+summary(fw_4)
+fg_4 = fitdist(data$overall_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_4)
+cdfcomp(fg_4)
+qqcomp(fg_4)
+ppcomp(fg_4)
+summary(fg_4)
+fc_4 = fitdist(data$overall_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_4)
+cdfcomp(fc_4)
+qqcomp(fc_4)
+ppcomp(fc_4)
+summary(fc_4)
+fls_4 = fitdist(data$overall_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_4)
+cdfcomp(fls_4)
+qqcomp(fls_4)
+ppcomp(fls_4)
+summary(fls_4)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_4,fln_4,fw_4),legendtext = plot.legend)
+qqcomp(list(fn_4,fln_4,fw_4),legendtext = plot.legend)
+cdfcomp(list(fn_4,fln_4,fw_4),legendtext = plot.legend)
+ppcomp(list(fn_4,fln_4,fw_4),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_4,fc_4,fls_4),legendtext = plot.legend)
+qqcomp(list(fg_4,fc_4,fls_4),legendtext = plot.legend)
+cdfcomp(list(fg_4,fc_4,fls_4),legendtext = plot.legend)
+ppcomp(list(fg_4,fc_4,fls_4),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_4,fln_4,fw_4,fg_4,fc_4,fls_4),legendtext = plot.legend)
+qqcomp(list(fn_4,fln_4,fw_4,fg_4,fc_4,fls_4),legendtext = plot.legend)
+cdfcomp(list(fn_4,fln_4,fw_4,fg_4,fc_4,fls_4),legendtext = plot.legend)
+ppcomp(list(fn_4,fln_4,fw_4,fg_4,fc_4,fls_4),legendtext = plot.legend)
+
+gofstat(list(fn_4,fln_4,fw_4,fg_4,fc_4,fls_4)) # GOODNESS OF FIT METRICS
+############### overall_score ATTRIBUTE FOLLOWS WEIBULL DISTRIBUTION ###############
+
+############### ATTRIBUTE-5 --> goal_1_score (NO POVERTY) ###############
+summary(data$goal_1_score)
+############### IMPUTATION BY MEDIAN ###############
+imputed_data_1 = as.numeric(impute(data$goal_1_score,median))
+imputed_data_1
+data$goal_1_score = imputed_data_1
+new_goal_1_score = data.frame(imputed_data_1)
+new_goal_1_score
+
+head(new_goal_1_score)
+
+summary(new_goal_1_score)
+
+basicStats(new_goal_1_score)
+
+descriptives(
+  data = new_goal_1_score,
+  vars = "imputed_data_1",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+boxplot(new_goal_1_score,main="BOXPLOT OF goal_1_score",col="orange")
+
+plot(data$overall_score,imputed_data_1,main="SCATTERPLOT",xlab = "overall_score",ylab = "goal_1_score",col="orange",pch=1)
+
+cor(data$overall_score,imputed_data_1)
+
+fn_5 = fitdist(imputed_data_1,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_5)
+cdfcomp(fn_5)
+qqcomp(fn_5)
+ppcomp(fn_5)
+summary(fn_5)
+fln_5 = fitdist(imputed_data_1,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_5)
+cdfcomp(fln_5)
+qqcomp(fln_5)
+ppcomp(fln_5)
+summary(fln_5)
+fw_5 = fitdist(imputed_data_1,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_5)
+cdfcomp(fw_5)
+qqcomp(fw_5)
+ppcomp(fw_5)
+summary(fw_5)
+fg_5 = fitdist(imputed_data_1,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_5)
+cdfcomp(fg_5)
+qqcomp(fg_5)
+ppcomp(fg_5)
+summary(fg_5)
+fc_5 = fitdist(imputed_data_1,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_5)
+cdfcomp(fc_5)
+qqcomp(fc_5)
+ppcomp(fc_5)
+summary(fc_5)
+fls_5 = fitdist(imputed_data_1,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_5)
+cdfcomp(fls_5)
+qqcomp(fls_5)
+ppcomp(fls_5)
+summary(fls_5)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_5,fln_5,fw_5),legendtext = plot.legend)
+qqcomp(list(fn_5,fln_5,fw_5),legendtext = plot.legend)
+cdfcomp(list(fn_5,fln_5,fw_5),legendtext = plot.legend)
+ppcomp(list(fn_5,fln_5,fw_5),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_5,fc_5,fls_5),legendtext = plot.legend)
+qqcomp(list(fg_5,fc_5,fls_5),legendtext = plot.legend)
+cdfcomp(list(fg_5,fc_5,fls_5),legendtext = plot.legend)
+ppcomp(list(fg_5,fc_5,fls_5),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_5,fln_5,fw_5,fg_5,fc_5,fls_5),legendtext = plot.legend)
+qqcomp(list(fn_5,fln_5,fw_5,fg_5,fc_5,fls_5),legendtext = plot.legend)
+cdfcomp(list(fn_5,fln_5,fw_5,fg_5,fc_5,fls_5),legendtext = plot.legend)
+ppcomp(list(fn_5,fln_5,fw_5,fg_5,fc_5,fls_5),legendtext = plot.legend)
+
+gofstat(list(fn_5,fln_5,fw_5,fg_5,fc_5,fls_5)) # GOODNESS OF FIT METRICS
+############### goal_1_score ATTRIBUTE FOLLOWS CAUCHY DISTRIBUTION ###############
+
+############### ATTRIBUTE-6 --> goal_2_score (ZERO HUNGER) ###############
+head(data$goal_2_score)
+summary(data$goal_2_score)
+plot(data$overall_score,data$goal_2_score,main="SCATTERPLOT",xlab = "overall_score",ylab="goal_2_score",col="red",pch=2)
+cor(data$overall_score,data$goal_2_score)
+boxplot(data$goal_2_score,main="BOXPLOT OF goal_2_score",col="red")
+############### OUTLIERS REMOVAL ###############
+outliers_detection_6_1 = boxplot.stats(data$goal_2_score)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_6_1,collapse = ",")))
+outliers_removed_6_1 = data$goal_2_score[-which(data$goal_2_score %in% outliers_detection_6_1)]
+boxplot(outliers_removed_6_1,main="BOXPLOT OF goal_2_score",col="red")
+
+outliers_detection_6_2 = boxplot.stats(outliers_removed_6_1)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_6_2,collapse = ",")))
+outliers_removed_6_2 = outliers_removed_6_1[-which(outliers_removed_6_1 %in% outliers_detection_6_2)]
+boxplot(outliers_removed_6_2,main="BOXPLOT OF goal_2_score",col="red")
+
+summary(outliers_removed_6_2)
+
+basicStats(outliers_removed_6_2)
+
+outliers_removed_6_2_df = data.frame(outliers_removed_6_2)
+
+descriptives(
+  data = outliers_removed_6_2_df,
+  vars = "outliers_removed_6_2",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+new_goal_2_score = outliers_removed_6_2
+new_goal_2_score
+
+fn_6 = fitdist(new_goal_2_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_6)
+cdfcomp(fn_6)
+qqcomp(fn_6)
+ppcomp(fn_6)
+summary(fn_6)
+fln_6 = fitdist(new_goal_2_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_6) 
+cdfcomp(fln_6)
+qqcomp(fln_6)
+ppcomp(fln_6)
+summary(fln_6)
+fw_6 = fitdist(new_goal_2_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_6)
+cdfcomp(fw_6)
+qqcomp(fw_6)
+ppcomp(fw_6)
+summary(fw_6)
+fg_6 = fitdist(new_goal_2_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_6)
+cdfcomp(fg_6)
+qqcomp(fg_6)
+ppcomp(fg_6)
+summary(fg_6)
+fc_6 = fitdist(new_goal_2_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_6)
+cdfcomp(fc_6)
+qqcomp(fc_6)
+ppcomp(fc_6)
+summary(fc_6)
+fls_6 = fitdist(new_goal_2_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_6)
+cdfcomp(fls_6)
+qqcomp(fls_6)
+ppcomp(fls_6)
+summary(fls_6)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_6,fln_6,fw_6),legendtext = plot.legend)
+qqcomp(list(fn_6,fln_6,fw_6),legendtext = plot.legend)
+cdfcomp(list(fn_6,fln_6,fw_6),legendtext = plot.legend)
+ppcomp(list(fn_6,fln_6,fw_6),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_6,fc_6,fls_6),legendtext = plot.legend)
+qqcomp(list(fg_6,fc_6,fls_6),legendtext = plot.legend)
+cdfcomp(list(fg_6,fc_6,fls_6),legendtext = plot.legend)
+ppcomp(list(fg_6,fc_6,fls_6),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_6,fln_6,fw_6,fg_6,fc_6,fls_6),legendtext = plot.legend)
+qqcomp(list(fn_6,fln_6,fw_6,fg_6,fc_6,fls_6),legendtext = plot.legend)
+cdfcomp(list(fn_6,fln_6,fw_6,fg_6,fc_6,fls_6),legendtext = plot.legend)
+ppcomp(list(fn_6,fln_6,fw_6,fg_6,fc_6,fls_6),legendtext = plot.legend)
+
+gofstat(list(fn_6,fln_6,fw_6,fg_6,fc_6,fls_6)) # GOODNESS OF FIT METRICS
+############### goal_2_score ATTRIBUTE FOLLOWS WEIBULL DISTRIBUTION ###############
+
+############### ATTRIBUTE-7 --> goal_3_score (GOOD HEALTH AND WELLBEING) ###############
+head(data$goal_3_score)
+
+summary(data$goal_3_score)
+
+basicStats(data$goal_3_score)
+
+descriptives(
+  data = data,
+  vars = "goal_3_score",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+boxplot(data$goal_3_score,main="BOXPLOT OF goal_3_score",col="aquamarine")
+
+plot(data$overall_score,data$goal_3_score,main="SCATTERPLOT",xlab="overall_score",ylab="goal_3_score",col="aquamarine",pch=3)
+
+cor(data$overall_score,data$goal_3_score)
+
+fn_7 = fitdist(data$goal_3_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_7)
+cdfcomp(fn_7)
+qqcomp(fn_7)
+ppcomp(fn_7)
+summary(fn_7)
+fln_7 = fitdist(data$goal_3_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_7)
+cdfcomp(fln_7)
+qqcomp(fln_7)
+ppcomp(fln_7)
+summary(fln_7)
+fw_7 = fitdist(data$goal_3_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_7)
+cdfcomp(fw_7)
+qqcomp(fw_7)
+ppcomp(fw_7)
+summary(fw_7)
+fg_7 = fitdist(data$goal_3_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_7)
+cdfcomp(fg_7)
+qqcomp(fg_7)
+ppcomp(fg_7)
+summary(fg_7)
+fc_7 = fitdist(data$goal_3_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_7)
+cdfcomp(fc_7)
+qqcomp(fc_7)
+ppcomp(fc_7)
+summary(fc_7)
+fls_7 = fitdist(data$goal_3_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_7)
+cdfcomp(fls_7)
+qqcomp(fls_7)
+ppcomp(fls_7)
+summary(fls_7)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_7,fln_7,fw_7),legendtext = plot.legend)
+qqcomp(list(fn_7,fln_7,fw_7),legendtext = plot.legend)
+cdfcomp(list(fn_7,fln_7,fw_7),legendtext = plot.legend)
+ppcomp(list(fn_7,fln_7,fw_7),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_7,fc_7,fls_7),legendtext = plot.legend)
+qqcomp(list(fg_7,fc_7,fls_7),legendtext = plot.legend)
+cdfcomp(list(fg_7,fc_7,fls_7),legendtext = plot.legend)
+ppcomp(list(fg_7,fc_7,fls_7),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_7,fln_7,fw_7,fg_7,fc_7,fls_7),legendtext = plot.legend)
+qqcomp(list(fn_7,fln_7,fw_7,fg_7,fc_7,fls_7),legendtext = plot.legend)
+cdfcomp(list(fn_7,fln_7,fw_7,fg_7,fc_7,fls_7),legendtext = plot.legend)
+ppcomp(list(fn_7,fln_7,fw_7,fg_7,fc_7,fls_7),legendtext = plot.legend)
+
+gofstat(list(fn_7,fln_7,fw_7,fg_7,fc_7,fls_7)) # GOODNESS OF FIT METRICS
+############### goal_3_score ATTRIBUTE FOLLOWS LOGISTIC DISTRIBUTION ###############
+
+############### ATTRIBUTE-8 --> goal_4_score (QUALITY EDUCATION) ###############
+head(data$goal_4_score)
+summary(data$goal_4_score)
+plot(data$overall_score,data$goal_4_score,main="SCATTERPLOT",xlab="overall_score",ylab="goal_4_score",col="brown4",pch=4)
+cor(data$overall_score,data$goal_4_score)
+boxplot(data$goal_4_score,main="BOXPLOT OF goal_4_score",col="brown4")
+############### OUTLIERS REMOVAL ###############
+outliers_detection_8_1 = boxplot.stats(data$goal_4_score)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_8_1,collapse = ",")))
+outliers_removed_8_1 = data$goal_4_score[-which(data$goal_4_score %in% outliers_detection_8_1)]
+boxplot(outliers_removed_8_1,main="BOXPLOT OF goal_4_score",col="brown4")
+
+outliers_detection_8_2 = boxplot.stats(outliers_removed_8_1)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_8_2,collapse = ",")))
+outliers_removed_8_2 = outliers_removed_8_1[-which(outliers_removed_8_1 %in% outliers_detection_8_2)]
+boxplot(outliers_removed_8_2,main="BOXPLOT OF goal_4_score",col="brown4")
+
+outliers_detection_8_3 = boxplot.stats(outliers_removed_8_2)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_8_3,collapse = ",")))
+outliers_removed_8_3 = outliers_removed_8_2[-which(outliers_removed_8_2 %in% outliers_detection_8_3)]
+boxplot(outliers_removed_8_3,main="BOXPLOT OF goal_4_score",col="brown4")
+
+summary(outliers_removed_8_3)
+
+basicStats(outliers_removed_8_3)
+
+outliers_removed_8_3_df = data.frame(outliers_removed_8_3)
+
+descriptives(
+  data = outliers_removed_8_3_df,
+  vars = "outliers_removed_8_3",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+new_goal_4_score = outliers_removed_8_3
+
+fn_8 = fitdist(new_goal_4_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_8)
+cdfcomp(fn_8)
+qqcomp(fn_8)
+ppcomp(fn_8)
+summary(fn_8)
+fln_8 = fitdist(new_goal_4_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_8) 
+cdfcomp(fln_8)
+qqcomp(fln_8)
+ppcomp(fln_8)
+summary(fln_8)
+fw_8 = fitdist(new_goal_4_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_8)
+cdfcomp(fw_8)
+qqcomp(fw_8)
+ppcomp(fw_8)
+summary(fw_8)
+fg_8 = fitdist(new_goal_4_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_8)
+cdfcomp(fg_8)
+qqcomp(fg_8)
+ppcomp(fg_8)
+summary(fg_8)
+fc_8 = fitdist(new_goal_4_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_8)
+cdfcomp(fc_8)
+qqcomp(fc_8)
+ppcomp(fc_8)
+summary(fc_8)
+fls_8 = fitdist(new_goal_4_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_8)
+cdfcomp(fls_8)
+qqcomp(fls_8)
+ppcomp(fls_8)
+summary(fls_8)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_8,fln_8,fw_8),legendtext = plot.legend)
+qqcomp(list(fn_8,fln_8,fw_8),legendtext = plot.legend)
+cdfcomp(list(fn_8,fln_8,fw_8),legendtext = plot.legend)
+ppcomp(list(fn_8,fln_8,fw_8),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_8,fc_8,fls_8),legendtext = plot.legend)
+qqcomp(list(fg_8,fc_8,fls_8),legendtext = plot.legend)
+cdfcomp(list(fg_8,fc_8,fls_8),legendtext = plot.legend)
+ppcomp(list(fg_8,fc_8,fls_8),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_8,fln_8,fw_8,fg_8,fc_8,fls_8),legendtext = plot.legend)
+qqcomp(list(fn_8,fln_8,fw_8,fg_8,fc_8,fls_8),legendtext = plot.legend)
+cdfcomp(list(fn_8,fln_8,fw_8,fg_8,fc_8,fls_8),legendtext = plot.legend)
+ppcomp(list(fn_8,fln_8,fw_8,fg_8,fc_8,fls_8),legendtext = plot.legend)
+
+gofstat(list(fn_8,fln_8,fw_8,fg_8,fc_8,fls_8)) # GOODNESS OF FIT METRICS
+############### goal_4_score ATTRIBUTE FOLLOWS LOGISTIC DISTRIBUTION ###############
+
+############### ATTRIBUTE-9 --> goal_5_score (GENDER EQUALITY) ###############
+head(data$goal_5_score)
+summary(data$goal_5_score)
+plot(data$overall_score,data$goal_5_score,main="SCATTERPLOT",xlab="overall_score",ylab="goal_5_score",col="chocolate4",pch=5)
+cor(data$overall_score,data$goal_5_score)
+boxplot(data$goal_5_score,main="BOXPLOT OF goal_5_score",col="chocolate4")
+############### OUTLIERS REMOVAL ###############
+outliers_detection_9 = boxplot.stats(data$goal_5_score)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_9,collapse = ",")))
+outliers_removed_9 = data$goal_5_score[-which(data$goal_5_score %in% outliers_detection_9)]
+boxplot(outliers_removed_9,main="BOXPLOT OF goal_5_score",col="chocolate4")
+
+summary(outliers_removed_9)
+
+basicStats(outliers_removed_9)
+
+outliers_removed_9_df = data.frame(outliers_removed_9)
+
+descriptives(
+  data = outliers_removed_9_df,
+  vars = "outliers_removed_9",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+new_goal_5_score = outliers_removed_9
+
+fn_9 = fitdist(new_goal_5_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_9)
+cdfcomp(fn_9)
+qqcomp(fn_9)
+ppcomp(fn_9)
+summary(fn_9)
+fln_9 = fitdist(new_goal_5_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_9) 
+cdfcomp(fln_9)
+qqcomp(fln_9)
+ppcomp(fln_9)
+summary(fln_9)
+fw_9 = fitdist(new_goal_5_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_9)
+cdfcomp(fw_9)
+qqcomp(fw_9)
+ppcomp(fw_9)
+summary(fw_9)
+fg_9 = fitdist(new_goal_5_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_9)
+cdfcomp(fg_9)
+qqcomp(fg_9)
+ppcomp(fg_9)
+summary(fg_9)
+fc_9 = fitdist(new_goal_5_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_9)
+cdfcomp(fc_9)
+qqcomp(fc_9)
+ppcomp(fc_9)
+summary(fc_9)
+fls_9 = fitdist(new_goal_5_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_9)
+cdfcomp(fls_9)
+qqcomp(fls_9)
+ppcomp(fls_9)
+summary(fls_9)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_9,fln_9,fw_9),legendtext = plot.legend)
+qqcomp(list(fn_9,fln_9,fw_9),legendtext = plot.legend)
+cdfcomp(list(fn_9,fln_9,fw_9),legendtext = plot.legend)
+ppcomp(list(fn_9,fln_9,fw_9),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_9,fc_9,fls_9),legendtext = plot.legend)
+qqcomp(list(fg_9,fc_9,fls_9),legendtext = plot.legend)
+cdfcomp(list(fg_9,fc_9,fls_9),legendtext = plot.legend)
+ppcomp(list(fg_9,fc_9,fls_9),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_9,fln_9,fw_9,fg_9,fc_9,fls_9),legendtext = plot.legend)
+qqcomp(list(fn_9,fln_9,fw_9,fg_9,fc_9,fls_9),legendtext = plot.legend)
+cdfcomp(list(fn_9,fln_9,fw_9,fg_9,fc_9,fls_9),legendtext = plot.legend)
+ppcomp(list(fn_9,fln_9,fw_9,fg_9,fc_9,fls_9),legendtext = plot.legend)
+
+gofstat(list(fn_9,fln_9,fw_9,fg_9,fc_9,fls_9)) # GOODNESS OF FIT METRICS
+############### goal_5_score ATTRIBUTE FOLLOWS WEIBULL DISTRIBUTION ###############
+
+############### ATTRIBUTE-10 --> goal_6_score (CLEAN WATER AND SANITATION) ###############
+head(data$goal_6_score)
+
+summary(data$goal_6_score)
+
+basicStats(data$goal_6_score)
+
+descriptives(
+  data = data,
+  vars = "goal_6_score",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+boxplot(data$goal_6_score,main="BOXPLOT OF goal_6_score",col="darkgoldenrod1")
+
+plot(data$overall_score,data$goal_6_score,main="SCATTERPLOT",xlab="overall_score",ylab="goal_6_score",col="darkgoldenrod1",pch=6)
+
+cor(data$overall_score,data$goal_6_score)
+
+fn_10 = fitdist(data$goal_6_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_10)
+cdfcomp(fn_10)
+qqcomp(fn_10)
+ppcomp(fn_10)
+summary(fn_10)
+fln_10 = fitdist(data$goal_6_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_10)
+cdfcomp(fln_10)
+qqcomp(fln_10)
+ppcomp(fln_10)
+summary(fln_10)
+fw_10 = fitdist(data$goal_6_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_10)
+cdfcomp(fw_10)
+qqcomp(fw_10)
+ppcomp(fw_10)
+summary(fw_10)
+fg_10 = fitdist(data$goal_6_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_10)
+cdfcomp(fg_10)
+qqcomp(fg_10)
+ppcomp(fg_10)
+summary(fg_10)
+fc_10 = fitdist(data$goal_6_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_10)
+cdfcomp(fc_10)
+qqcomp(fc_10)
+ppcomp(fc_10)
+summary(fc_10)
+fls_10 = fitdist(data$goal_6_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_10)
+cdfcomp(fls_10)
+qqcomp(fls_10)
+ppcomp(fls_10)
+summary(fls_10)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_10,fln_10,fw_10),legendtext = plot.legend)
+qqcomp(list(fn_10,fln_10,fw_10),legendtext = plot.legend)
+cdfcomp(list(fn_10,fln_10,fw_10),legendtext = plot.legend)
+ppcomp(list(fn_10,fln_10,fw_10),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_10,fc_10,fls_10),legendtext = plot.legend)
+qqcomp(list(fg_10,fc_10,fls_10),legendtext = plot.legend)
+cdfcomp(list(fg_10,fc_10,fls_10),legendtext = plot.legend)
+ppcomp(list(fg_10,fc_10,fls_10),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_10,fln_10,fw_10,fg_10,fc_10,fls_10),legendtext = plot.legend)
+qqcomp(list(fn_10,fln_10,fw_10,fg_10,fc_10,fls_10),legendtext = plot.legend)
+cdfcomp(list(fn_10,fln_10,fw_10,fg_10,fc_10,fls_10),legendtext = plot.legend)
+ppcomp(list(fn_10,fln_10,fw_10,fg_10,fc_10,fls_10),legendtext = plot.legend)
+
+gofstat(list(fn_10,fln_10,fw_10,fg_10,fc_10,fls_10)) # GOODNESS OF FIT METRICS
+############### goal_6_score ATTRIBUTE FOLLOWS NORMAL DISTRIBUTION ###############
+
+############### ATTRIBUTE-11 --> goal_7_score (AFFORDABLE AND CLEAN ENERYGY) ###############
+head(data$goal_7_score)
+
+summary(data$goal_7_score)
+
+basicStats(data$goal_7_score)
+
+descriptives(
+  data = data,
+  vars = "goal_7_score",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+boxplot(data$goal_7_score,main="BOXPLOT OF goal_7_score",col="darkgreen")
+
+plot(data$overall_score,data$goal_7_score,main="SCATTERPLOT",xlab="overall_score",ylab="goal_7_score",pch=7,col="darkgreen")
+
+cor(data$overall_score,data$goal_7_score)
+
+fn_11 = fitdist(data$goal_7_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_11)
+cdfcomp(fn_11)
+qqcomp(fn_11)
+ppcomp(fn_11)
+summary(fn_11)
+fln_11 = fitdist(data$goal_7_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_11)
+cdfcomp(fln_11)
+qqcomp(fln_11)
+ppcomp(fln_11)
+summary(fln_11)
+fw_11 = fitdist(data$goal_7_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_11)
+cdfcomp(fw_11)
+qqcomp(fw_11)
+ppcomp(fw_11)
+summary(fw_11)
+fg_11 = fitdist(data$goal_7_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_11)
+cdfcomp(fg_11)
+qqcomp(fg_11)
+ppcomp(fg_11)
+summary(fg_11)
+fc_11 = fitdist(data$goal_7_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_11)
+cdfcomp(fc_11)
+qqcomp(fc_11)
+ppcomp(fc_11)
+summary(fc_11)
+fls_11 = fitdist(data$goal_7_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_11)
+cdfcomp(fls_11)
+qqcomp(fls_11)
+ppcomp(fls_11)
+summary(fls_11)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_11,fln_11,fw_11),legendtext = plot.legend)
+qqcomp(list(fn_11,fln_11,fw_11),legendtext = plot.legend)
+cdfcomp(list(fn_11,fln_11,fw_11),legendtext = plot.legend)
+ppcomp(list(fn_11,fln_11,fw_11),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_11,fc_11,fls_11),legendtext = plot.legend)
+qqcomp(list(fg_11,fc_11,fls_11),legendtext = plot.legend)
+cdfcomp(list(fg_11,fc_11,fls_11),legendtext = plot.legend)
+ppcomp(list(fg_11,fc_11,fls_11),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_11,fln_11,fw_11,fg_11,fc_11,fls_11),legendtext = plot.legend)
+qqcomp(list(fn_11,fln_11,fw_11,fg_11,fc_11,fls_11),legendtext = plot.legend)
+cdfcomp(list(fn_11,fln_11,fw_11,fg_11,fc_11,fls_11),legendtext = plot.legend)
+ppcomp(list(fn_11,fln_11,fw_11,fg_11,fc_11,fls_11),legendtext = plot.legend)
+
+gofstat(list(fn_11,fln_11,fw_11,fg_11,fc_11,fls_11)) # GOODNESS OF FIT METRICS
+############### goal_7_score ATTRIBUTE FOLLOWS LOGISTIC DISTRIBUTION ###############
+
+############### ATTRIBUTE-12 --> goal_8_score (DECENT WORK AND ECONOMIC GROWTH)  ###############
+head(data$goal_8_score)
+summary(data$goal_8_score)
+plot(data$overall_score,data$goal_8_score,main="SCATTERPLOT",xlab="overall_score",ylab="goal_8_score",col="darkmagenta",pch=8)
+cor(data$overall_score,data$goal_8_score)
+boxplot(data$goal_8_score,main="BOXPLOT OF goal_8_score",col="darkmagenta")
+############### OUTLIERS REMOVAL ###############
+outliers_detection_12_1 = boxplot.stats(data$goal_8_score)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_12_1,collapse = ",")))
+outliers_removed_12_1 = data$goal_8_score[-which(data$goal_8_score %in% outliers_detection_12_1)]
+boxplot(outliers_removed_12_1,main="BOXPLOT OF goal_8_score",col="darkmagenta")
+
+outliers_detection_12_2 = boxplot.stats(outliers_removed_12_1)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_12_2,collapse = ",")))
+outliers_removed_12_2 = outliers_removed_12_1[-which(outliers_removed_12_1 %in% outliers_detection_12_2)]
+boxplot(outliers_removed_12_2,main="BOXPLOT OF goal_8_score",col="darkmagenta")
+
+summary(outliers_removed_12_2)
+
+basicStats(outliers_removed_12_2)
+
+outliers_removed_12_2_df = data.frame(outliers_removed_12_2)
+
+descriptives(
+  data = outliers_removed_12_2_df,
+  vars = "outliers_removed_12_2",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+new_goal_8_score = outliers_removed_12_2
+
+fn_12 = fitdist(new_goal_8_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_12)
+cdfcomp(fn_12)
+qqcomp(fn_12)
+ppcomp(fn_12)
+summary(fn_12)
+fln_12 = fitdist(new_goal_8_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_12) 
+cdfcomp(fln_12)
+qqcomp(fln_12)
+ppcomp(fln_12)
+summary(fln_12)
+fw_12 = fitdist(new_goal_8_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_12)
+cdfcomp(fw_12)
+qqcomp(fw_12)
+ppcomp(fw_12)
+summary(fw_12)
+fg_12 = fitdist(new_goal_8_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_12)
+cdfcomp(fg_12)
+qqcomp(fg_12)
+ppcomp(fg_12)
+summary(fg_12)
+fc_12 = fitdist(new_goal_8_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_12)
+cdfcomp(fc_12)
+qqcomp(fc_12)
+ppcomp(fc_12)
+summary(fc_12)
+fls_12 = fitdist(new_goal_8_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_12)
+cdfcomp(fls_12)
+qqcomp(fls_12)
+ppcomp(fls_12)
+summary(fls_12)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_12,fln_12,fw_12),legendtext = plot.legend)
+qqcomp(list(fn_12,fln_12,fw_12),legendtext = plot.legend)
+cdfcomp(list(fn_12,fln_12,fw_12),legendtext = plot.legend)
+ppcomp(list(fn_12,fln_12,fw_12),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_12,fc_12,fls_12),legendtext = plot.legend)
+qqcomp(list(fg_12,fc_12,fls_12),legendtext = plot.legend)
+cdfcomp(list(fg_12,fc_12,fls_12),legendtext = plot.legend)
+ppcomp(list(fg_12,fc_12,fls_12),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_12,fln_12,fw_12,fg_12,fc_12,fls_12),legendtext = plot.legend)
+qqcomp(list(fn_12,fln_12,fw_12,fg_12,fc_12,fls_12),legendtext = plot.legend)
+cdfcomp(list(fn_12,fln_12,fw_12,fg_12,fc_12,fls_12),legendtext = plot.legend)
+ppcomp(list(fn_12,fln_12,fw_12,fg_12,fc_12,fls_12),legendtext = plot.legend)
+
+gofstat(list(fn_12,fln_12,fw_12,fg_12,fc_12,fls_12)) # GOODNESS OF FIT METRICS
+############### goal_8_score ATTRIBUTE FOLLOWS WEIBULL DISTRIBUTION ###############
+
+############### ATTRIBUTE-13 --> goal_9_score (INDUSTRY, INNOVATION AND INFRASTRUCTURE) ###############
+head(data$goal_9_score)
+
+summary(data$goal_9_score)
+
+basicStats(data$goal_9_score)
+
+descriptives(
+  data = data,
+  vars = "goal_9_score",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+boxplot(data$goal_9_score,main="BOXPLOT OF goal_9_score",col="maroon1")
+
+plot(data$overall_score,data$goal_9_score,main="SCATTERPLOT",xlab="overall_score",ylab="goal_9_score",col="maroon1",pch=9)
+
+cor(data$overall_score,data$goal_9_score)
+
+fn_13 = fitdist(data$goal_9_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_13)
+cdfcomp(fn_13)
+qqcomp(fn_13)
+ppcomp(fn_13)
+summary(fn_13)
+fln_13 = fitdist(data$goal_9_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_13)
+cdfcomp(fln_13)
+qqcomp(fln_13)
+ppcomp(fln_13)
+summary(fln_13)
+fw_13 = fitdist(data$goal_9_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_13)
+cdfcomp(fw_13)
+qqcomp(fw_13)
+ppcomp(fw_13)
+summary(fw_13)
+fg_13 = fitdist(data$goal_9_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_13)
+cdfcomp(fg_13)
+qqcomp(fg_13)
+ppcomp(fg_13)
+summary(fg_13)
+fc_13 = fitdist(data$goal_9_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_13)
+cdfcomp(fc_13)
+qqcomp(fc_13)
+ppcomp(fc_13)
+summary(fc_13)
+fls_13 = fitdist(data$goal_9_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_13)
+cdfcomp(fls_13)
+qqcomp(fls_13)
+ppcomp(fls_13)
+summary(fls_13)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_13,fln_13,fw_13),legendtext = plot.legend)
+qqcomp(list(fn_13,fln_13,fw_13),legendtext = plot.legend)
+cdfcomp(list(fn_13,fln_13,fw_13),legendtext = plot.legend)
+ppcomp(list(fn_13,fln_13,fw_13),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_13,fc_13,fls_13),legendtext = plot.legend)
+qqcomp(list(fg_13,fc_13,fls_13),legendtext = plot.legend)
+cdfcomp(list(fg_13,fc_13,fls_13),legendtext = plot.legend)
+ppcomp(list(fg_13,fc_13,fls_13),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_13,fln_13,fw_13,fg_13,fc_13,fls_13),legendtext = plot.legend)
+qqcomp(list(fn_13,fln_13,fw_13,fg_13,fc_13,fls_13),legendtext = plot.legend)
+cdfcomp(list(fn_13,fln_13,fw_13,fg_13,fc_13,fls_13),legendtext = plot.legend)
+ppcomp(list(fn_13,fln_13,fw_13,fg_13,fc_13,fls_13),legendtext = plot.legend)
+
+gofstat(list(fn_13,fln_13,fw_13,fg_13,fc_13,fls_13)) # GOODNESS OF FIT METRICS
+############### goal_9_score ATTRIBUTE FOLLOWS WEIBULL DISTRIBUTION ###############
+
+############### ATTRIBUTE-14 --> goal_10_score (REDUCED INEQUALITIES) ###############
+summary(data$goal_10_score)
+############### IMPUTATION BY MEDIAN ###############
+imputed_data_10 = as.numeric(impute(data$goal_10_score,median))
+imputed_data_10
+data$goal_10_score = imputed_data_10
+new_goal_10_score = data.frame(imputed_data_10)
+new_goal_10_score
+
+head(new_goal_10_score)
+
+summary(new_goal_10_score)
+
+basicStats(new_goal_10_score)
+
+descriptives(
+  data = new_goal_10_score,
+  vars = "imputed_data_10",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+boxplot(new_goal_10_score,main="BOXPLOT OF goal_10_score",col="royalblue1")
+
+plot(data$overall_score,imputed_data_10,main="SCATTERPLOT",xlab="overall_score",ylab="goal_10_score",col="royalblue1",pch=10)
+
+cor(data$overall_score,imputed_data_10)
+
+fn_14 = fitdist(imputed_data_10,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_14)
+cdfcomp(fn_14)
+qqcomp(fn_14)
+ppcomp(fn_14)
+summary(fn_14)
+fln_14 = fitdist(imputed_data_10,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_14)
+cdfcomp(fln_14)
+qqcomp(fln_14)
+ppcomp(fln_14)
+summary(fln_14)
+fw_14 = fitdist(imputed_data_10,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_14)
+cdfcomp(fw_14)
+qqcomp(fw_14)
+ppcomp(fw_14)
+summary(fw_14)
+fg_14 = fitdist(imputed_data_10,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_14)
+cdfcomp(fg_14)
+qqcomp(fg_14)
+ppcomp(fg_14)
+summary(fg_14)
+fc_14 = fitdist(imputed_data_10,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_14)
+cdfcomp(fc_14)
+qqcomp(fc_14)
+ppcomp(fc_14)
+summary(fc_14)
+fls_14 = fitdist(imputed_data_10,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_14)
+cdfcomp(fls_14)
+qqcomp(fls_14)
+ppcomp(fls_14)
+summary(fls_14)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_14,fln_14,fw_14),legendtext = plot.legend)
+qqcomp(list(fn_14,fln_14,fw_14),legendtext = plot.legend)
+cdfcomp(list(fn_14,fln_14,fw_14),legendtext = plot.legend)
+ppcomp(list(fn_14,fln_14,fw_14),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_14,fc_14,fls_14),legendtext = plot.legend)
+qqcomp(list(fg_14,fc_14,fls_14),legendtext = plot.legend)
+cdfcomp(list(fg_14,fc_14,fls_14),legendtext = plot.legend)
+ppcomp(list(fg_14,fc_14,fls_14),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_14,fln_14,fw_14,fg_14,fc_14,fls_14),legendtext = plot.legend)
+qqcomp(list(fn_14,fln_14,fw_14,fg_14,fc_14,fls_14),legendtext = plot.legend)
+cdfcomp(list(fn_14,fln_14,fw_14,fg_14,fc_14,fls_14),legendtext = plot.legend)
+ppcomp(list(fn_14,fln_14,fw_14,fg_14,fc_14,fls_14),legendtext = plot.legend)
+
+gofstat(list(fn_14,fln_14,fw_14,fg_14,fc_14,fls_14)) # GOODNESS OF FIT METRICS
+############### goal_10_score ATTRIBUTE FOLLOWS LOGISTIC DISTRIBUTION ###############
+
+############### ATTRIBUTE-15 --> goal_11_score (SUSTAINABLE CITIES AND COMMUNITIES) ################
+head(data$goal_11_score)
+summary(data$goal_11_score)
+plot(data$overall_score,data$goal_11_score,main="SCATTERPLOT",xlab="overall_score",ylab="goal_11_score",col="tomato1",pch=11)
+cor(data$overall_score,data$goal_11_score)
+boxplot(data$goal_11_score,main="BOXPLOT OF goal_11_score",col="tomato1")
+############### OUTLIERS REMOVAL ###############
+outliers_detection_15 = boxplot.stats(data$goal_11_score)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_15,collapse = ",")))
+outliers_removed_15 = data$goal_11_score[-which(data$goal_11_score %in% outliers_detection_15)]
+boxplot(outliers_removed_15,main="BOXPLOT OF goal_11_score",col="tomato1")
+
+summary(outliers_removed_15)
+
+basicStats(outliers_removed_15)
+
+outliers_removed_15_df = data.frame(outliers_removed_15)
+
+descriptives(
+  data = outliers_removed_15_df,
+  vars = "outliers_removed_15",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+new_goal_11_score = outliers_removed_15
+
+fn_15 = fitdist(new_goal_11_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_15)
+cdfcomp(fn_15)
+qqcomp(fn_15)
+ppcomp(fn_15)
+summary(fn_15)
+fln_15 = fitdist(new_goal_11_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_15) 
+cdfcomp(fln_15)
+qqcomp(fln_15)
+ppcomp(fln_15)
+summary(fln_15)
+fw_15 = fitdist(new_goal_11_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_15)
+cdfcomp(fw_15)
+qqcomp(fw_15)
+ppcomp(fw_15)
+summary(fw_15)
+fg_15 = fitdist(new_goal_11_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_15)
+cdfcomp(fg_15)
+qqcomp(fg_15)
+ppcomp(fg_15)
+summary(fg_15)
+fc_15 = fitdist(new_goal_11_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_15)
+cdfcomp(fc_15)
+qqcomp(fc_15)
+ppcomp(fc_15)
+summary(fc_15)
+fls_15 = fitdist(new_goal_11_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_15)
+cdfcomp(fls_15)
+qqcomp(fls_15)
+ppcomp(fls_15)
+summary(fls_15)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_15,fln_15,fw_15),legendtext = plot.legend)
+qqcomp(list(fn_15,fln_15,fw_15),legendtext = plot.legend)
+cdfcomp(list(fn_15,fln_15,fw_15),legendtext = plot.legend)
+ppcomp(list(fn_15,fln_15,fw_15),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_15,fc_15,fls_15),legendtext = plot.legend)
+qqcomp(list(fg_15,fc_15,fls_15),legendtext = plot.legend)
+cdfcomp(list(fg_15,fc_15,fls_15),legendtext = plot.legend)
+ppcomp(list(fg_15,fc_15,fls_15),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_15,fln_15,fw_15,fg_15,fc_15,fls_15),legendtext = plot.legend)
+qqcomp(list(fn_15,fln_15,fw_15,fg_15,fc_15,fls_15),legendtext = plot.legend)
+cdfcomp(list(fn_15,fln_15,fw_15,fg_15,fc_15,fls_15),legendtext = plot.legend)
+ppcomp(list(fn_15,fln_15,fw_15,fg_15,fc_15,fls_15),legendtext = plot.legend)
+
+gofstat(list(fn_15,fln_15,fw_15,fg_15,fc_15,fls_15)) # GOODNESS OF FIT METRICS
+############### goal_11_score ATTRIBUTE FOLLOWS WEIBULL DISTRIBUTION ###############
+
+############### ATTRIBUTE-16 --> goal_12_score (RESPONSIBLE CONSUMPTION AND PRODUCTION) ###############
+head(data$goal_12_score)
+
+summary(data$goal_12_score)
+
+basicStats(data$goal_12_score)
+
+descriptives(
+  data = data,
+  vars = "goal_12_score",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+boxplot(data$goal_12_score,main="BOXPLOT OF goal_12_score",col="blueviolet")
+
+plot(data$overall_score,data$goal_12_score,main="SCATTERPLOT",xlab="overall_score",ylab="goal_12_score",col="blueviolet",pch=12)
+
+cor(data$overall_score,data$goal_12_score)
+
+fn_16 = fitdist(data$goal_12_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_16)
+cdfcomp(fn_16)
+qqcomp(fn_16)
+ppcomp(fn_16)
+summary(fn_16)
+fln_16 = fitdist(data$goal_12_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_16)
+cdfcomp(fln_16)
+qqcomp(fln_16)
+ppcomp(fln_16)
+summary(fln_16)
+fw_16 = fitdist(data$goal_12_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_16)
+cdfcomp(fw_16)
+qqcomp(fw_16)
+ppcomp(fw_16)
+summary(fw_16)
+fg_16 = fitdist(data$goal_12_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_16)
+cdfcomp(fg_16)
+qqcomp(fg_16)
+ppcomp(fg_16)
+summary(fg_16)
+fc_16 = fitdist(data$goal_12_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_16)
+cdfcomp(fc_16)
+qqcomp(fc_16)
+ppcomp(fc_16)
+summary(fc_16)
+fls_16 = fitdist(data$goal_12_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_16)
+cdfcomp(fls_16)
+qqcomp(fls_16)
+ppcomp(fls_16)
+summary(fls_16)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_16,fln_16,fw_16),legendtext = plot.legend)
+qqcomp(list(fn_16,fln_16,fw_16),legendtext = plot.legend)
+cdfcomp(list(fn_16,fln_16,fw_16),legendtext = plot.legend)
+ppcomp(list(fn_16,fln_16,fw_16),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_16,fc_16,fls_16),legendtext = plot.legend)
+qqcomp(list(fg_16,fc_16,fls_16),legendtext = plot.legend)
+cdfcomp(list(fg_16,fc_16,fls_16),legendtext = plot.legend)
+ppcomp(list(fg_16,fc_16,fls_16),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_16,fln_16,fw_16,fg_16,fc_16,fls_16),legendtext = plot.legend)
+qqcomp(list(fn_16,fln_16,fw_16,fg_16,fc_16,fls_16),legendtext = plot.legend)
+cdfcomp(list(fn_16,fln_16,fw_16,fg_16,fc_16,fls_16),legendtext = plot.legend)
+ppcomp(list(fn_16,fln_16,fw_16,fg_16,fc_16,fls_16),legendtext = plot.legend)
+
+gofstat(list(fn_16,fln_16,fw_16,fg_16,fc_16,fls_16)) # GOODNESS OF FIT METRICS
+############### goal_12_score ATTRIBUTE FOLLOWS WEIBULL DISTRIBUTION ###############
+
+############### ATTRIBUTE-17 --> goal_13_score (CLIMATE ACTION) ##############
+summary(data$goal_13_score)
+############### IMPUTATION BY MEDIAN ###############
+imputed_data_13 = as.numeric(impute(data$goal_13_score,median))
+imputed_data_13
+data$goal_13_score = imputed_data_13
+head(imputed_data_13)
+summary(imputed_data_13)
+plot(data$overall_score,imputed_data_13,main="SCATTERPLOT",xlab="overall_score",ylab="goal_13_score",col="darkcyan",pch=13)
+cor(data$overall_score,imputed_data_13)
+boxplot(imputed_data_13,main="BOXPLOT OF goal_13_score",col="darkcyan")
+############### OUTLIERS REMOVAL ###############
+outliers_detection_17_1 = boxplot.stats(imputed_data_13)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_17_1,collapse = ",")))
+outliers_removed_17_1 = imputed_data_13[-which(imputed_data_13 %in% outliers_detection_17_1)]
+boxplot(outliers_removed_17_1,main="BOXPLOT OF goal_13_score",col="darkcyan")
+
+outliers_detection_17_2 = boxplot.stats(outliers_removed_17_1)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_17_2,collapse = ",")))
+outliers_removed_17_2 = outliers_removed_17_1[-which(outliers_removed_17_1 %in% outliers_detection_17_2)]
+boxplot(outliers_removed_17_2,main="BOXPLOT OF goal_13_score",col="darkcyan")
+
+summary(outliers_removed_17_2)
+
+basicStats(outliers_removed_17_2)
+
+outliers_removed_17_2_df = data.frame(outliers_removed_17_2)
+
+descriptives(
+  data = outliers_removed_17_2_df,
+  vars = "outliers_removed_17_2",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+new_goal_13_score = outliers_removed_17_2
+
+fn_17 = fitdist(new_goal_13_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_17)
+cdfcomp(fn_17)
+qqcomp(fn_17)
+ppcomp(fn_17)
+summary(fn_17)
+fln_17 = fitdist(new_goal_13_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_17) 
+cdfcomp(fln_17)
+qqcomp(fln_17)
+ppcomp(fln_17)
+summary(fln_17)
+fw_17 = fitdist(new_goal_13_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_17)
+cdfcomp(fw_17)
+qqcomp(fw_17)
+ppcomp(fw_17)
+summary(fw_17)
+fg_17 = fitdist(new_goal_13_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_17)
+cdfcomp(fg_17)
+qqcomp(fg_17)
+ppcomp(fg_17)
+summary(fg_17)
+fc_17 = fitdist(new_goal_13_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_17)
+cdfcomp(fc_17)
+qqcomp(fc_17)
+ppcomp(fc_17)
+summary(fc_17)
+fls_17 = fitdist(new_goal_13_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_17)
+cdfcomp(fls_17)
+qqcomp(fls_17)
+ppcomp(fls_17)
+summary(fls_17)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_17,fln_17,fw_17),legendtext = plot.legend)
+qqcomp(list(fn_17,fln_17,fw_17),legendtext = plot.legend)
+cdfcomp(list(fn_17,fln_17,fw_17),legendtext = plot.legend)
+ppcomp(list(fn_17,fln_17,fw_17),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_17,fc_17,fls_17),legendtext = plot.legend)
+qqcomp(list(fg_17,fc_17,fls_17),legendtext = plot.legend)
+cdfcomp(list(fg_17,fc_17,fls_17),legendtext = plot.legend)
+ppcomp(list(fg_17,fc_17,fls_17),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_17,fln_17,fw_17,fg_17,fc_17,fls_17),legendtext = plot.legend)
+qqcomp(list(fn_17,fln_17,fw_17,fg_17,fc_17,fls_17),legendtext = plot.legend)
+cdfcomp(list(fn_17,fln_17,fw_17,fg_17,fc_17,fls_17),legendtext = plot.legend)
+ppcomp(list(fn_17,fln_17,fw_17,fg_17,fc_17,fls_17),legendtext = plot.legend)
+
+gofstat(list(fn_17,fln_17,fw_17,fg_17,fc_17,fls_17)) # GOODNESS OF FIT METRICS
+############### goal_13_score ATTRIBUTE FOLLOWS WEIBULL DISTRIBUTION ###############
+
+############### ATTRIBUTE-18 --> goal_14_score (LIFE BELOW WATER) ###############
+summary(data$goal_14_score)
+############### IMPUTATION BY MEDIAN ###############
+imputed_data_14 = as.numeric(impute(data$goal_14_score,median))
+imputed_data_14
+data$goal_14_score = imputed_data_14
+head(imputed_data_14)
+summary(imputed_data_14)
+plot(data$overall_score,imputed_data_14,main="SCATTERPLOT",xlab="overall_score",ylab="goal_14_score",col="deepskyblue",pch=14)
+cor(data$overall_score,imputed_data_14)
+boxplot(imputed_data_14,main="BOXPLOT OF goal_14_score",col="deepskyblue")
+############### OUTLIERS REMOVAL ###############
+outliers_detection_18 = boxplot.stats(imputed_data_14)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_18,collapse = ",")))
+outliers_removed_18 = imputed_data_14[-which(imputed_data_14 %in% outliers_detection_18)]
+boxplot(outliers_removed_18,main="BOXPLOT OF goal_14_score",col="deepskyblue")
+
+summary(outliers_removed_18)
+
+basicStats(outliers_removed_18)
+
+outliers_removed_18_df = data.frame(outliers_removed_18)
+
+descriptives(
+  data = outliers_removed_18_df,
+  vars = "outliers_removed_18",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+new_goal_14_score = outliers_removed_18
+
+fn_18 = fitdist(new_goal_14_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_18)
+cdfcomp(fn_18)
+qqcomp(fn_18)
+ppcomp(fn_18)
+summary(fn_18)
+fln_18 = fitdist(new_goal_14_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_18) 
+cdfcomp(fln_18)
+qqcomp(fln_18)
+ppcomp(fln_18)
+summary(fln_18)
+fw_18 = fitdist(new_goal_14_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_18)
+cdfcomp(fw_18)
+qqcomp(fw_18)
+ppcomp(fw_18)
+summary(fw_18)
+fg_18 = fitdist(new_goal_14_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_18)
+cdfcomp(fg_18)
+qqcomp(fg_18)
+ppcomp(fg_18)
+summary(fg_18)
+fc_18 = fitdist(new_goal_14_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_18)
+cdfcomp(fc_18)
+qqcomp(fc_18)
+ppcomp(fc_18)
+summary(fc_18)
+fls_18 = fitdist(new_goal_14_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_18)
+cdfcomp(fls_18)
+qqcomp(fls_18)
+ppcomp(fls_18)
+summary(fls_18)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_18,fln_18,fw_18),legendtext = plot.legend)
+qqcomp(list(fn_18,fln_18,fw_18),legendtext = plot.legend)
+cdfcomp(list(fn_18,fln_18,fw_18),legendtext = plot.legend)
+ppcomp(list(fn_18,fln_18,fw_18),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_18,fc_18,fls_18),legendtext = plot.legend)
+qqcomp(list(fg_18,fc_18,fls_18),legendtext = plot.legend)
+cdfcomp(list(fg_18,fc_18,fls_18),legendtext = plot.legend)
+ppcomp(list(fg_18,fc_18,fls_18),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_18,fln_18,fw_18,fg_18,fc_18,fls_18),legendtext = plot.legend)
+qqcomp(list(fn_18,fln_18,fw_18,fg_18,fc_18,fls_18),legendtext = plot.legend)
+cdfcomp(list(fn_18,fln_18,fw_18,fg_18,fc_18,fls_18),legendtext = plot.legend)
+ppcomp(list(fn_18,fln_18,fw_18,fg_18,fc_18,fls_18),legendtext = plot.legend)
+
+gofstat(list(fn_18,fln_18,fw_18,fg_18,fc_18,fls_18)) # GOODNESS OF FIT METRICS
+############### goal_14_score ATTRIBUTE FOLLOWS LOGISTIC DISTRIBUTION ###############
+
+############### ATTRIBUTE-19 --> goal_15_score (LIFE ON LAND) ###############
+head(data$goal_15_score)
+
+summary(data$goal_15_score)
+
+basicStats(data$goal_15_score)
+
+descriptives(
+  data = data,
+  vars = "goal_15_score",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+boxplot(data$goal_15_score,main="BOXPLOT OF goal_15_score",col="indianred1")
+
+plot(data$overall_score,data$goal_15_score,main="SCATTERPLOT",xlab="overall_score",ylab="goal_15_score",col="indianred1",pch=15)
+
+cor(data$overall_score,data$goal_15_score)
+
+fn_19 = fitdist(data$goal_15_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_19)
+cdfcomp(fn_19)
+qqcomp(fn_19)
+ppcomp(fn_19)
+summary(fn_19)
+fln_19 = fitdist(data$goal_15_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_19)
+cdfcomp(fln_19)
+qqcomp(fln_19)
+ppcomp(fln_19)
+summary(fln_19)
+fw_19 = fitdist(data$goal_15_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_19)
+cdfcomp(fw_19)
+qqcomp(fw_19)
+ppcomp(fw_19)
+summary(fw_19)
+fg_19 = fitdist(data$goal_15_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_19)
+cdfcomp(fg_19)
+qqcomp(fg_19)
+ppcomp(fg_19)
+summary(fg_19)
+fc_19 = fitdist(data$goal_15_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_19)
+cdfcomp(fc_19)
+qqcomp(fc_19)
+ppcomp(fc_19)
+summary(fc_19)
+fls_19 = fitdist(data$goal_15_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_19)
+cdfcomp(fls_19)
+qqcomp(fls_19)
+ppcomp(fls_19)
+summary(fls_19)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_19,fln_19,fw_19),legendtext = plot.legend)
+qqcomp(list(fn_19,fln_19,fw_19),legendtext = plot.legend)
+cdfcomp(list(fn_19,fln_19,fw_19),legendtext = plot.legend)
+ppcomp(list(fn_19,fln_19,fw_19),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_19,fc_19,fls_19),legendtext = plot.legend)
+qqcomp(list(fg_19,fc_19,fls_19),legendtext = plot.legend)
+cdfcomp(list(fg_19,fc_19,fls_19),legendtext = plot.legend)
+ppcomp(list(fg_19,fc_19,fls_19),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_19,fln_19,fw_19,fg_19,fc_19,fls_19),legendtext = plot.legend)
+qqcomp(list(fn_19,fln_19,fw_19,fg_19,fc_19,fls_19),legendtext = plot.legend)
+cdfcomp(list(fn_19,fln_19,fw_19,fg_19,fc_19,fls_19),legendtext = plot.legend)
+ppcomp(list(fn_19,fln_19,fw_19,fg_19,fc_19,fls_19),legendtext = plot.legend)
+
+gofstat(list(fn_19,fln_19,fw_19,fg_19,fc_19,fls_19)) # GOODNESS OF FIT METRICS
+############### goal_15_score ATTRIBUTE FOLLOWS NORMAL DISTRIBUTION ###############
+
+############### ATTRIBUTE-20 --> goal_16_score (PEACE, JUSTICE AND STRONG INSTITUTIONS) ##############
+head(data$goal_16_score)
+
+summary(data$goal_16_score)
+
+basicStats(data$goal_16_score)
+
+descriptives(
+  data = data,
+  vars = "goal_16_score",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+boxplot(data$goal_16_score,main="BOXPLOT OF goal_16_score",col="khaki2")
+
+plot(data$overall_score,data$goal_16_score,main="SCATTERPLOT",xlab="overall_score",ylab="goal_16_score",col="khaki2",pch=16)
+
+cor(data$overall_score,data$goal_16_score)
+
+fn_20 = fitdist(data$goal_16_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_20)
+cdfcomp(fn_20)
+qqcomp(fn_20)
+ppcomp(fn_20)
+summary(fn_20)
+fln_20 = fitdist(data$goal_16_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_20)
+cdfcomp(fln_20)
+qqcomp(fln_20)
+ppcomp(fln_20)
+summary(fln_20)
+fw_20 = fitdist(data$goal_16_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_20)
+cdfcomp(fw_20)
+qqcomp(fw_20)
+ppcomp(fw_20)
+summary(fw_20)
+fg_20 = fitdist(data$goal_16_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_20)
+cdfcomp(fg_20)
+qqcomp(fg_20)
+ppcomp(fg_20)
+summary(fg_20)
+fc_20 = fitdist(data$goal_16_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_20)
+cdfcomp(fc_20)
+qqcomp(fc_20)
+ppcomp(fc_20)
+summary(fc_20)
+fls_20 = fitdist(data$goal_16_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_20)
+cdfcomp(fls_20)
+qqcomp(fls_20)
+ppcomp(fls_20)
+summary(fls_20)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_20,fln_20,fw_20),legendtext = plot.legend)
+qqcomp(list(fn_20,fln_20,fw_20),legendtext = plot.legend)
+cdfcomp(list(fn_20,fln_20,fw_20),legendtext = plot.legend)
+ppcomp(list(fn_20,fln_20,fw_20),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_20,fc_20,fls_20),legendtext = plot.legend)
+qqcomp(list(fg_20,fc_20,fls_20),legendtext = plot.legend)
+cdfcomp(list(fg_20,fc_20,fls_20),legendtext = plot.legend)
+ppcomp(list(fg_20,fc_20,fls_20),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_20,fln_20,fw_20,fg_20,fc_20,fls_20),legendtext = plot.legend)
+qqcomp(list(fn_20,fln_20,fw_20,fg_20,fc_20,fls_20),legendtext = plot.legend)
+cdfcomp(list(fn_20,fln_20,fw_20,fg_20,fc_20,fls_20),legendtext = plot.legend)
+ppcomp(list(fn_20,fln_20,fw_20,fg_20,fc_20,fls_20),legendtext = plot.legend)
+
+gofstat(list(fn_20,fln_20,fw_20,fg_20,fc_20,fls_20)) # GOODNESS OF FIT METRICS
+############### goal_16_score ATTRIBUTE FOLLOWS GAMMA DISTRIBUTION ###############
+
+############### ATTRIBUTE-21 --> goal_17_score (PARTNERSHIPS FOR THE GOALS) ###############
+head(data$goal_17_score)
+
+summary(data$goal_17_score)
+
+basicStats(data$goal_17_score)
+
+descriptives(
+  data = data,
+  vars = "goal_17_score",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+boxplot(data$goal_17_score,main="BOXPLOT OF goal_17_score",col="green3")
+
+plot(data$overall_score,data$goal_17_score,main="SCATTERPLOT",xlab="overall_score",ylab="goal_17_score",col="green3",pch=17)
+
+cor(data$overall_score,data$goal_17_score)
+
+fn_21 = fitdist(data$goal_17_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_21)
+cdfcomp(fn_21)
+qqcomp(fn_21)
+ppcomp(fn_21)
+summary(fn_21)
+fln_21 = fitdist(data$goal_17_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_21)
+cdfcomp(fln_21)
+qqcomp(fln_21)
+ppcomp(fln_21)
+summary(fln_21)
+fw_21 = fitdist(data$goal_17_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_21)
+cdfcomp(fw_21)
+qqcomp(fw_21)
+ppcomp(fw_21)
+summary(fw_21)
+fg_21 = fitdist(data$goal_17_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_21)
+cdfcomp(fg_21)
+qqcomp(fg_21)
+ppcomp(fg_21)
+summary(fg_21)
+fc_21 = fitdist(data$goal_17_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_21)
+cdfcomp(fc_21)
+qqcomp(fc_21)
+ppcomp(fc_21)
+summary(fc_21)
+fls_21 = fitdist(data$goal_17_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_21)
+cdfcomp(fls_21)
+qqcomp(fls_21)
+ppcomp(fls_21)
+summary(fls_21)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_21,fln_21,fw_21),legendtext = plot.legend)
+qqcomp(list(fn_21,fln_21,fw_21),legendtext = plot.legend)
+cdfcomp(list(fn_21,fln_21,fw_21),legendtext = plot.legend)
+ppcomp(list(fn_21,fln_21,fw_21),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_21,fc_21,fls_21),legendtext = plot.legend)
+qqcomp(list(fg_21,fc_21,fls_21),legendtext = plot.legend)
+cdfcomp(list(fg_21,fc_21,fls_21),legendtext = plot.legend)
+ppcomp(list(fg_21,fc_21,fls_21),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_21,fln_21,fw_21,fg_21,fc_21,fls_21),legendtext = plot.legend)
+qqcomp(list(fn_21,fln_21,fw_21,fg_21,fc_21,fls_21),legendtext = plot.legend)
+cdfcomp(list(fn_21,fln_21,fw_21,fg_21,fc_21,fls_21),legendtext = plot.legend)
+ppcomp(list(fn_21,fln_21,fw_21,fg_21,fc_21,fls_21),legendtext = plot.legend)
+
+gofstat(list(fn_21,fln_21,fw_21,fg_21,fc_21,fls_21)) # GOODNESS OF FIT METRICS
+############### goal_17_score ATTRIBUTE FOLLOWS NORMAL DISTRIBUTION ###############
+
+############### OECD COUNTRIES SUBSET ###############
+reg1 = data[data$region == "OECD",]
+reg1
+summary(reg1$overall_score)
+boxplot(reg1$overall_score,main="BOXPLOT OF overall_score OF OECD COUNTRIES",col="mediumorchid3")
+############### OUTLIERS REMOVAL ###############
+outliers_detection_OECD = boxplot.stats(reg1$overall_score)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_OECD,collapse = ",")))
+outliers_removed_OECD = reg1$overall_score[-which(reg1$overall_score %in% outliers_detection_OECD)]
+boxplot(outliers_removed_OECD,main="BOXPLOT OF overall_score OF OECD COUNTRIES",col="mediumorchid3")
+
+summary(outliers_removed_OECD)
+
+basicStats(outliers_removed_OECD)
+
+outliers_removed_OECD_df = data.frame(outliers_removed_OECD)
+
+descriptives(
+  data = outliers_removed_OECD_df,
+  vars = "outliers_removed_OECD",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+OECD_ovr_score = outliers_removed_OECD
+
+fn_OECD = fitdist(OECD_ovr_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_OECD)
+cdfcomp(fn_OECD)
+qqcomp(fn_OECD)
+ppcomp(fn_OECD)
+summary(fn_OECD)
+fln_OECD = fitdist(OECD_ovr_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_OECD) 
+cdfcomp(fln_OECD)
+qqcomp(fln_OECD)
+ppcomp(fln_OECD)
+summary(fln_OECD)
+fw_OECD = fitdist(OECD_ovr_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_OECD)
+cdfcomp(fw_OECD)
+qqcomp(fw_OECD)
+ppcomp(fw_OECD)
+summary(fw_OECD)
+fg_OECD = fitdist(OECD_ovr_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_OECD)
+cdfcomp(fg_OECD)
+qqcomp(fg_OECD)
+ppcomp(fg_OECD)
+summary(fg_OECD)
+fc_OECD = fitdist(OECD_ovr_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_OECD)
+cdfcomp(fc_OECD)
+qqcomp(fc_OECD)
+ppcomp(fc_OECD)
+summary(fc_OECD)
+fls_OECD = fitdist(OECD_ovr_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_OECD)
+cdfcomp(fls_OECD)
+qqcomp(fls_OECD)
+ppcomp(fls_OECD)
+summary(fls_OECD)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_OECD,fln_OECD,fw_OECD),legendtext = plot.legend)
+qqcomp(list(fn_OECD,fln_OECD,fw_OECD),legendtext = plot.legend)
+cdfcomp(list(fn_OECD,fln_OECD,fw_OECD),legendtext = plot.legend)
+ppcomp(list(fn_OECD,fln_OECD,fw_OECD),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_OECD,fc_OECD,fls_OECD),legendtext = plot.legend)
+qqcomp(list(fg_OECD,fc_OECD,fls_OECD),legendtext = plot.legend)
+cdfcomp(list(fg_OECD,fc_OECD,fls_OECD),legendtext = plot.legend)
+ppcomp(list(fg_OECD,fc_OECD,fls_OECD),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_OECD,fln_OECD,fw_OECD,fg_OECD,fc_OECD,fls_OECD),legendtext = plot.legend)
+qqcomp(list(fn_OECD,fln_OECD,fw_OECD,fg_OECD,fc_OECD,fls_OECD),legendtext = plot.legend)
+cdfcomp(list(fn_OECD,fln_OECD,fw_OECD,fg_OECD,fc_OECD,fls_OECD),legendtext = plot.legend)
+ppcomp(list(fn_OECD,fln_OECD,fw_OECD,fg_OECD,fc_OECD,fls_OECD),legendtext = plot.legend)
+
+gofstat(list(fn_OECD,fln_OECD,fw_OECD,fg_OECD,fc_OECD,fls_OECD)) # GOODNESS OF FIT METRICS
+############### overall_score of OECD COUNTRIES FOLLOWS LOGISTIC DISTRIBUTION ###############
+
+############### SUB-SAHARAN AFRICA COUNTRIES SUBSET ###############
+reg2 = data[data$region == "Sub-Saharan Africa",]
+reg2
+summary(reg2$overall_score)
+boxplot(reg2$overall_score,main = "BOXPLOT OF overall_score OF\n SUB-SAHARAN AFRICAN COUNTRIES",col="cornsilk")
+############### OUTLIERS REMOVAL ###############
+outliers_detection_SSA = boxplot.stats(reg2$overall_score)$out
+mtext(paste("OUTLIERS :",paste(outliers_detection_SSA,collapse = ",")))
+outliers_removed_SSA = reg2$overall_score[-which(reg2$overall_score %in% outliers_detection_SSA)]
+boxplot(outliers_removed_SSA,main = "BOXPLOT OF overall_score OF\n SUB-SAHARAN AFRICAN COUNTRIES",col="cornsilk")
+
+summary(outliers_removed_SSA)
+
+basicStats(outliers_removed_SSA)
+
+outliers_removed_SSA_df = data.frame(outliers_removed_SSA)
+
+descriptives(
+  data = outliers_removed_SSA_df,
+  vars = "outliers_removed_SSA",
+  freq = TRUE,
+  hist = TRUE,
+  dens = TRUE,
+  bar = FALSE,
+  barCounts = FALSE,
+  box = FALSE,
+  sd = TRUE,
+  variance = TRUE,
+  range = TRUE,
+  se = TRUE,
+  skew = TRUE,
+  kurt = TRUE,
+  pcEqGr = TRUE,
+  pcNEqGr = 10)
+
+SSA_ovr_score = outliers_removed_SSA
+
+fn_SSA = fitdist(SSA_ovr_score,"norm") # NORMAL DISTRIBUTION
+denscomp(fn_SSA)
+cdfcomp(fn_SSA)
+qqcomp(fn_SSA)
+ppcomp(fn_SSA)
+summary(fn_SSA)
+fln_SSA = fitdist(SSA_ovr_score,"lnorm") # LOGNORMAL DISTRIBUTION
+denscomp(fln_SSA) 
+cdfcomp(fln_SSA)
+qqcomp(fln_SSA)
+ppcomp(fln_SSA)
+summary(fln_SSA)
+fw_SSA = fitdist(SSA_ovr_score,"weibull") # WEIBULL DISTRIBUTION
+denscomp(fw_SSA)
+cdfcomp(fw_SSA)
+qqcomp(fw_SSA)
+ppcomp(fw_SSA)
+summary(fw_SSA)
+fg_SSA = fitdist(SSA_ovr_score,"gamma") # GAMMA DISTRIBUTION
+denscomp(fg_SSA)
+cdfcomp(fg_SSA)
+qqcomp(fg_SSA)
+ppcomp(fg_SSA)
+summary(fg_SSA)
+fc_SSA = fitdist(SSA_ovr_score,"cauchy") # CAUCHY DISTRIBUTION
+denscomp(fc_SSA)
+cdfcomp(fc_SSA)
+qqcomp(fc_SSA)
+ppcomp(fc_SSA)
+summary(fc_SSA)
+fls_SSA = fitdist(SSA_ovr_score,"logis") # LOGISTIC DISTRIBUTION
+denscomp(fls_SSA)
+cdfcomp(fls_SSA)
+qqcomp(fls_SSA)
+ppcomp(fls_SSA)
+summary(fls_SSA)
+
+############### COMPARISON ###############
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_SSA,fln_SSA,fw_SSA),legendtext = plot.legend)
+qqcomp(list(fn_SSA,fln_SSA,fw_SSA),legendtext = plot.legend)
+cdfcomp(list(fn_SSA,fln_SSA,fw_SSA),legendtext = plot.legend)
+ppcomp(list(fn_SSA,fln_SSA,fw_SSA),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fg_SSA,fc_SSA,fls_SSA),legendtext = plot.legend)
+qqcomp(list(fg_SSA,fc_SSA,fls_SSA),legendtext = plot.legend)
+cdfcomp(list(fg_SSA,fc_SSA,fls_SSA),legendtext = plot.legend)
+ppcomp(list(fg_SSA,fc_SSA,fls_SSA),legendtext = plot.legend)
+
+par(mfrow = c(2,2))
+plot.legend = c("NORMAL","LOGNORMAL","WEIBULL","GAMMA","CAUCHY","LOGISTIC")
+par(mar=c(1,1,1,1))
+denscomp(list(fn_SSA,fln_SSA,fw_SSA,fg_SSA,fc_SSA,fls_SSA),legendtext = plot.legend)
+qqcomp(list(fn_SSA,fln_SSA,fw_SSA,fg_SSA,fc_SSA,fls_SSA),legendtext = plot.legend)
+cdfcomp(list(fn_SSA,fln_SSA,fw_SSA,fg_SSA,fc_SSA,fls_SSA),legendtext = plot.legend)
+ppcomp(list(fn_SSA,fln_SSA,fw_SSA,fg_SSA,fc_SSA,fls_SSA),legendtext = plot.legend)
+
+gofstat(list(fn_SSA,fln_SSA,fw_SSA,fg_SSA,fc_SSA,fls_SSA)) # GOODNESS OF FIT METRICS
+############### overall_score of SUB-SAHARAN AFRICAN COUNTRIES FOLLOWS LOGNORMAL DISTRIBUTION ###############
+
+############### MULTI-LINEAR REGRESSION MODEL ###############
+MLR_Model = lm(formula = overall_score ~ goal_1_score + 
+                 goal_2_score + goal_3_score + goal_4_score +
+                 goal_5_score + goal_6_score + goal_7_score + 
+                 goal_8_score + goal_9_score + goal_10_score + 
+                 goal_11_score + goal_12_score + goal_13_score + 
+                 goal_14_score + goal_15_score + goal_16_score +
+                 goal_17_score, data = data)
+summary(MLR_Model)
+
+################ PREDICTING THE FINLAND overall_score ###############
+FIN_data = data.frame(goal_1_score = 99.57500, goal_2_score = 60.88675,
+                      goal_3_score = 95.38638, goal_4_score = 97.16933,
+                      goal_5_score = 92.11125, goal_6_score = 94.32760,
+                      goal_7_score = 93.01350, goal_8_score = 86.78900,
+                      goal_9_score = 95.99571, goal_10_score = 98.46850,
+                      goal_11_score = 91.23375, goal_12_score = 60.05957,
+                      goal_13_score = 68.793667, goal_14_score = 87.92800,
+                      goal_15_score = 85.07000, goal_16_score = 92.52109,
+                      goal_17_score = 75.60100)
+
+predicted_value = predict(MLR_Model,FIN_data)
+predicted_value
+
+observed_value = data$overall_score[1]
+observed_value
+
+comparison = data.frame(observed_value,predicted_value)
+comparison
+
+
+############### BARGRAPH OF overall_score ###############
+des_data = data[order(-data$overall_score),]
+des_data
+
+ovr1 = des_data$overall_score[1:40]
+ovr1
+con1 = des_data$country[1:40]
+con1
+data1 = data.frame(ovr1,con1)
+data1
+OVR_SCORE = data1$ovr1
+ggplot() + geom_bar(aes(x = reorder(data1$con1,OVR_SCORE),y = OVR_SCORE,
+                        fill = OVR_SCORE),stat = "identity") + 
+  ggtitle("BARCHART") + theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text  = element_text(size = 6),
+        axis.title = element_text(size = 10),
+        plot.title = element_text(size = 10)) + 
+  theme(axis.text.x = element_text(angle = 90,hjust = 1)) +
+  xlab("COUNTRY") + ylab("OVERALL SDG SCORES") + coord_flip() +
+  scale_fill_gradient(low = "blue", high = "red")
+
+
+ovr2 = des_data$overall_score[41:80]
+ovr2
+con2 = des_data$country[41:80]
+con2
+data2 = data.frame(ovr2,con2)
+data2
+OVR_SCORE = data2$ovr2
+ggplot() + geom_bar(aes(x = reorder(data2$con2,OVR_SCORE),y = OVR_SCORE,
+                        fill = OVR_SCORE),stat = "identity") + 
+  ggtitle("BARCHART") + theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text  = element_text(size = 6),
+        axis.title = element_text(size = 10),
+        plot.title = element_text(size = 10)) + 
+  theme(axis.text.x = element_text(angle = 90,hjust = 1)) +
+  xlab("COUNTRY") + ylab("OVERALL SDG SCORES") + coord_flip() +
+  scale_fill_gradient(low = "orange", high = "blue")
+
+
+ovr3 = des_data$overall_score[81:120]
+ovr3
+con3 = des_data$country[81:120]
+con3
+data3 = data.frame(ovr3,con3)
+data3
+OVR_SCORE = data3$ovr3
+ggplot() + geom_bar(aes(x = reorder(data3$con3,OVR_SCORE),y = OVR_SCORE,
+                        fill = OVR_SCORE),stat = "identity") + 
+  ggtitle("BARCHART") + theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text  = element_text(size = 6),
+        axis.title = element_text(size = 10),
+        plot.title = element_text(size = 10)) + 
+  theme(axis.text.x = element_text(angle = 90,hjust = 1)) +
+  xlab("COUNTRY") + ylab("OVERALL SDG SCORES") + coord_flip() +
+  scale_fill_gradient(low = "mediumorchid", high = "orange")
+
+
+ovr4 = des_data$overall_score[121:166]
+ovr4
+con4 = des_data$country[121:166]
+con4
+data4 = data.frame(ovr4,con4)
+data4
+OVR_SCORE = data4$ovr4
+ggplot() + geom_bar(aes(x = reorder(data4$con4,OVR_SCORE),y = OVR_SCORE,
+                        fill = OVR_SCORE),stat = "identity") + 
+  ggtitle("BARCHART") + theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text  = element_text(size = 6),
+        axis.title = element_text(size = 10),
+        plot.title = element_text(size = 10)) + 
+  theme(axis.text.x = element_text(angle = 90,hjust = 1)) +
+  xlab("COUNTRY") + ylab("OVERALL SDG SCORES") + coord_flip() +
+  scale_fill_gradient(low = "deepskyblue", high = "mediumorchid")
